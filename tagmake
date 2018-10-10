@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+if [[ -z "$1" ]]; then
+    echo "Creates a tag that can be used to tag files"
+    echo "Usage: tagmake tagName"
+    exit 1
+fi
+
+
+d=~/.tag/$1
+if [[ -d "$d" ]]; then
+    echo "Tag '$1' exists already."
+else
+    mkdir $d
+    echo "Tag created"
+fi
+
+exit 0

@@ -1,0 +1,74 @@
+#!/bin/bash
+
+set -e
+
+if [[ -z "$1" ]]; then
+    echo "Returns all files that have all provided tags at the same time"
+    echo "Usage: tagsearch tagName1 tagName2 ..."
+    exit 1
+fi
+
+
+for var in "$@"
+do
+    if [[ "$var" == "-e" ]]; then
+	break
+    fi
+    d=~/.tag/$var
+    if [[ ! -d "$d" ]]; then
+	echo "Tag '$var' does not exist. Ignoring it!"
+    else
+	tags="$tags $var"
+    fi
+done
+
+# every tag just once
+tags=$(echo "$tags" | tr " " "\n"|sort|uniq|tr "\n" " ")
+cnt=$(echo "$tags" | wc -w)
+
+if [[ $cnt -eq 1 ]]; then
+    tags="$tags $tags"
+fi
+
+cnt=0
+files=$(mktemp)
+files2=$(mktemp)
+fileWarn=$(mktemp)
+for var in $(echo $tags | tr " " "\n")
+do
+    cnt=$cnt+1
+    d=~/.tag/$var
+    for f in $(ls $d)
+    do
+	if [[ ! -f "$d/$f" ]]; then
+	    echo "Warning (Broken Symbolic Link): $d/$f (restore the target or remove the symbolic link, tagcleanbrokenlinks deletes all broken symbolic links)" >> $fileWarn
+	else
+	    readlink -e $d/$f >> $files
+	fi
+    done
+
+    if [[ $cnt -ne 1 ]]; then
+	sort $files | uniq -d > $files2 && cp $files2 $files
+    fi
+done
+
+
+if [[ "$@" == *" -e "* ]]; then
+    for f in $(cat $files)
+    do
+	echo "${@: -1} $f &"
+	${@: -1} $f &
+    done
+else
+    para=$(cat $files)
+    echo -e "\033[1;41m files:\033[0m"
+    echo $para | tr " " "\n"
+    tags=$(tagget $para)
+    echo ""
+    echo -e "\033[1;41m tags(union):\033[0m"
+    echo $tags
+fi
+
+cat $fileWarn | sort -u 
+rm $files $files2 $fileWarn
+exit 0

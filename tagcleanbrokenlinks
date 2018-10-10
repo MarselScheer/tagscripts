@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+symblnks=$(find ~/.tag/ -name '*')
+for f in $symblnks
+do
+    if [[ ! -f "$f" && ! -d "$f" ]]; then
+	brklnks="$brklnks $f"
+    fi
+done
+
+if [[  -z "$brklnks" ]]; then
+    exit 0
+fi
+
+echo "The following links are broken:"
+echo ""
+for f in $brklnks
+do
+    echo $(ls -l $f)
+done
+echo ""
+echo -n "Delete them (y/N)? "
+read -n1 answer
+echo ""
+
+if [[ "$answer" == "y" ]]; then
+    for f in $brklnks
+    do
+	rm $f
+    done
+fi
+
+exit 0

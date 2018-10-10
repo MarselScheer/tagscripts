@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+if [[ $# -eq 0 ]]; then
+    echo "Returns the (union of) tags of the provided files"
+    echo "Usage: tagget file1 file2 ...";
+    exit 1
+fi
+
+tags=
+for para in $@
+do
+    absFile=$(readlink -e $para)
+    fName=$(basename $para)
+
+    #echo "File '$1' has the following tags"
+    for f in $(find ~/.tag/ -name "${fName}*")
+    do 
+	absTmp=$(readlink -e $f)
+	if [[ "$absTmp" == "$absFile" ]]; then
+	    tags="$tags $(basename $(dirname $f))"
+	fi
+    done
+done
+echo $tags | tr " " "\n" | sort -u
+exit 0

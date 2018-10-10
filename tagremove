@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+
+if [[ $# -le 1 ]]; then
+    echo "Removes one tag from one file"
+    echo "Usage: tagremove file tagName"
+    exit 1
+fi
+
+absFile=$(readlink -e $1)
+fName=$(basename $1)
+
+d=~/.tag/$2
+if [[ ! -d "$d" ]]; then
+    echo "Tag '$2' does not exist. (tagshow shows all existing tags)"
+    exit 1
+fi
+
+for f in $(find ~/.tag/$2/ -name "${fName}*")
+do 
+    absTmp=$(readlink -e $f)
+    if [[ "$absTmp" == "$absFile" ]]; then
+	rm $f
+    fi
+done
+
+
+exit 0

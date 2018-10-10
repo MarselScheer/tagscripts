@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+if [[ -z "$1" ]]; then
+    echo "Returns the files (in a specific dir) that have not a single tag"
+    echo "Usage: tagget dir or tagget -R dir";
+    exit 1
+fi
+
+
+files=
+if [[ "$1" == "-R" ]]; then
+    absDir=$(readlink -e $2)
+    files=$(find $absDir -type f -name '*' | sort)
+else
+    absDir=$(readlink -e $1)
+    files=$(find $absDir -maxdepth 1 -type f -name '*' | sort)
+fi
+
+
+for f in $files
+do 
+    numtags=$(tagget $f | wc -w)
+    if [[ $numtags -eq 0 ]]; then
+	echo $f
+    fi
+done
+
+exit 0

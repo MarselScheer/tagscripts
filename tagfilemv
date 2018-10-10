@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+if [[ $# -le 1 ]]; then
+    echo "Moves one file from SOURCE to DEST without losing the tags"
+    echo "Usage: tagfilemv SOURCE DEST"
+    exit 1
+fi
+
+
+absFile=$(readlink -e $1)
+tags=$(tagget $absFile)
+
+cp $absFile $2
+absFile2=$(readlink -e $2)
+
+for t in $(echo $tags | tr " " "\n")
+do
+    tagremove $absFile $t
+    tag $absFile2 $t
+done
+rm $absFile
+
+exit 0
